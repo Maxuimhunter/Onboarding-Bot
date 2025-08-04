@@ -1,4 +1,4 @@
-# AAR Insurance Discord Bot
+# Onboarding Discord Bot
 
 A Discord bot for managing member onboarding and status tracking for AAR Insurance. The bot collects member information and maintains their status in an Excel file.
 
@@ -95,6 +95,4 @@ All member information is stored in `onboarding_data.xlsx` with the following co
 - Ensure the bot has the necessary permissions in your Discord server
 - The Excel file will be created automatically when the first user registers
 - **Important**: Close the Excel file before using `!status` or onboarding commands, as the bot won't be able to modify the file while it's open in Excel
-
-- The KRA verification is currently commented out as requested. Uncomment and implement the verification logic in the `verify_kra()` function as needed.
 - Document scanning functionality is a placeholder. You'll need to integrate with a scanning library for actual scanning capabilities.
