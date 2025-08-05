@@ -1,13 +1,24 @@
-# Onboarding Discord Bot
+# AAR Insurance Discord Bot
 
-A Discord bot for managing member onboarding and status tracking for AAR Insurance. The bot collects member information and maintains their status in an Excel file.
+## Update History
+
+### August 5, 2025
+- **Separate Identity Data Storage**: Implemented secure storage of sensitive identity information (ID, Passport, KRA) in a separate Excel file (`onboarding_data_identity.xlsx`)
+- **Enhanced Security**: Improved data handling by isolating sensitive information from general user data
+- **Updated Documentation**: Revised README to reflect new data storage structure and security measures
+
+---
+
+
+A Discord bot for managing member onboarding and status tracking for AAR Insurance. The bot collects member information and maintains their status in Excel files, with sensitive data stored separately for security.
 
 ## Features
 
 - Interactive onboarding process
 - Unique entry code generation for each member
 - Member status management (Active/Inactive)
-- Excel data storage with formatting
+- Secure storage of sensitive identity information in a separate file
+- Excel data storage with automatic formatting
 - Easy-to-use Discord commands
 - Real-time status updates
 
@@ -66,7 +77,8 @@ Displays the help message with all available commands.
 
 ## Data Storage
 
-All member information is stored in `onboarding_data.xlsx` with the following columns:
+### Main Data File: `onboarding_data.xlsx`
+Contains general member information:
 - Entry Code (auto-generated)
 - User ID (Discord ID)
 - Full Name
@@ -75,6 +87,14 @@ All member information is stored in `onboarding_data.xlsx` with the following co
 - Date of Birth
 - Registration Date (auto-filled)
 - Status (Active/Inactive)
+
+### Identity Data File: `onboarding_data_identity.xlsx`
+Stores sensitive identity information separately:
+- Full Name
+- ID Number (if provided)
+- Passport Number (if provided)
+- KRA PIN (if provided)
+- Last Updated timestamp
 
 ## Setup Instructions
 
@@ -90,9 +110,37 @@ All member information is stored in `onboarding_data.xlsx` with the following co
    python bot.py
    ```
 
-## Notes
+## Security Notes
+- Sensitive identity information is stored in a separate file for enhanced security
+- The bot only stores the data you provide during the onboarding process
+- Ensure proper file system permissions are set for the Excel files
+
+## Future Improvements
+
+### Data Management
+- [ ] Database Integration: Migrate from Excel to a proper database (e.g., SQLite or PostgreSQL) for better performance and reliability
+- [ ] Data Encryption: Implement encryption for sensitive data at rest
+- [ ] Backup System: Add automated backup functionality for the data files
+
+### Bot Features
+- [ ] Admin Dashboard: Web interface for managing users and viewing statistics
+- [ ] Bulk Operations: Commands for managing multiple users at once
+- [ ] Data Export: Additional export formats (CSV, PDF) for reports
+- [ ] Advanced Search: Enhanced search functionality for user records
+
+### Security Enhancements
+- [ ] Role-based Access Control: Different permission levels for different user roles
+- [ ] Audit Logging: Track all changes made to user data
+- [ ] Two-Factor Authentication: Additional security for sensitive operations
+
+### User Experience
+- [ ] Progress Saving: Allow users to save and resume the onboarding process
+- [ ] Form Validation: More robust input validation and error messages
+- [ ] Multi-language Support: Support for multiple languages in the bot interface
+
+## Usage Notes
 - The bot requires an internet connection to communicate with Discord's servers
 - Ensure the bot has the necessary permissions in your Discord server
-- The Excel file will be created automatically when the first user registers
-- **Important**: Close the Excel file before using `!status` or onboarding commands, as the bot won't be able to modify the file while it's open in Excel
-- Document scanning functionality is a placeholder. You'll need to integrate with a scanning library for actual scanning capabilities.
+- The Excel files will be created automatically when the first user registers
+- **Important**: Close the Excel files before using bot commands, as they won't be modifiable while open in Excel
+- The bot will automatically create and manage both the main data file and the identity data file
