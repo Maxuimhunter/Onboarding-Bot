@@ -1,4 +1,4 @@
-# AAR Insurance Discord Bot
+# On-Boarding Discord Bot
 
 ## Update History
 
