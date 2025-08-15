@@ -121,6 +121,7 @@ Stores sensitive identity information separately:
 - [ ] Database Integration: Migrate from Excel to a proper database (e.g., SQLite or PostgreSQL) for better performance and reliability
 - [ ] Data Encryption: Implement encryption for sensitive data at rest
 - [ ] Backup System: Add automated backup functionality for the data files
+- [ ] Imigration with MySQL DataBase for Easier and quicker storage of User data and Input
 
 ### Bot Features
 - [ ] Admin Dashboard: Web interface for managing users and viewing statistics
