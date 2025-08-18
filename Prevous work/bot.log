@@ -1,0 +1,98 @@
+2025-08-01 10:12:59,960 - AARBot - INFO - Python version: 3.12.0 (tags/v3.12.0:0fb18b0, Oct  2 2023, 13:03:39) [MSC v.1935 64 bit (AMD64)]
+2025-08-01 10:12:59,960 - AARBot - INFO - discord.py version: 2.3.2
+2025-08-01 10:12:59,961 - discord.client - WARNING - PyNaCl is not installed, voice will NOT be supported
+2025-08-01 10:12:59,963 - discord.client - INFO - logging in using static token
+2025-08-01 10:13:01,749 - discord.gateway - INFO - Shard ID None has connected to Gateway (Session ID: 99e55f728868fa702a9b2f687b1a6f2e).
+2025-08-01 10:13:03,779 - AARBot - INFO - 
+=== BOT STARTING UP ===
+2025-08-01 10:13:03,780 - AARBot - INFO - Logged in as: Onboarder#7552
+2025-08-01 10:13:03,780 - AARBot - INFO - Bot ID: 1400469591787831449
+2025-08-01 10:13:03,782 - AARBot - INFO - 
+=== BOT IS READY ===
+2025-08-01 10:13:03,782 - AARBot - INFO - Bot is connected to the following servers:
+2025-08-01 10:13:03,782 - AARBot - INFO - - EZ_GGgaming (ID: 1035505836195332166)
+2025-08-01 10:13:03,782 - AARBot - INFO - 
+=== INVITE LINK ===
+2025-08-01 10:13:03,782 - AARBot - INFO - https://discord.com/oauth2/authorize?client_id=1400469591787831449&permissions=8&scope=bot
+2025-08-01 10:13:03,782 - AARBot - INFO - 
+=== WAITING FOR COMMANDS ===
+
+2025-08-01 10:14:57,171 - AARBot - INFO - Python version: 3.12.0 (tags/v3.12.0:0fb18b0, Oct  2 2023, 13:03:39) [MSC v.1935 64 bit (AMD64)]
+2025-08-01 10:14:57,171 - AARBot - INFO - discord.py version: 2.3.2
+2025-08-01 10:14:57,172 - discord.client - WARNING - PyNaCl is not installed, voice will NOT be supported
+2025-08-01 10:14:57,173 - discord.client - INFO - logging in using static token
+2025-08-01 10:14:58,877 - discord.gateway - INFO - Shard ID None has connected to Gateway (Session ID: e004f220ce870e57d1f65d22a45f7cfe).
+2025-08-01 10:15:00,884 - AARBot - INFO - 
+=== BOT STARTING UP ===
+2025-08-01 10:15:00,884 - AARBot - INFO - Logged in as: Onboarder#7552
+2025-08-01 10:15:00,884 - AARBot - INFO - Bot ID: 1400469591787831449
+2025-08-01 10:15:00,884 - AARBot - INFO - 
+=== BOT IS READY ===
+2025-08-01 10:15:00,884 - AARBot - INFO - Bot is connected to the following servers:
+2025-08-01 10:15:00,884 - AARBot - INFO - - EZ_GGgaming (ID: 1035505836195332166)
+2025-08-01 10:15:00,884 - AARBot - INFO - 
+=== INVITE LINK ===
+2025-08-01 10:15:00,885 - AARBot - INFO - https://discord.com/oauth2/authorize?client_id=1400469591787831449&permissions=8&scope=bot
+2025-08-01 10:15:00,885 - AARBot - INFO - 
+=== WAITING FOR COMMANDS ===
+
+2025-08-01 10:16:33,735 - AARBot - INFO - Python version: 3.12.0 (tags/v3.12.0:0fb18b0, Oct  2 2023, 13:03:39) [MSC v.1935 64 bit (AMD64)]
+2025-08-01 10:16:33,735 - AARBot - INFO - discord.py version: 2.3.2
+2025-08-01 10:16:37,633 - AARBot - INFO - 
+=== BOT STARTING UP ===
+2025-08-01 10:16:37,634 - AARBot - INFO - Logged in as: Onboarder#7552
+2025-08-01 10:16:37,634 - AARBot - INFO - Bot ID: 1400469591787831449
+2025-08-01 10:16:37,634 - AARBot - INFO - 
+=== BOT IS READY ===
+2025-08-01 10:16:37,635 - AARBot - INFO - Bot is connected to the following servers:
+2025-08-01 10:16:37,635 - AARBot - INFO - - EZ_GGgaming (ID: 1035505836195332166)
+2025-08-01 10:16:37,635 - AARBot - INFO - 
+=== INVITE LINK ===
+2025-08-01 10:16:37,635 - AARBot - INFO - https://discord.com/oauth2/authorize?client_id=1400469591787831449&permissions=8&scope=bot
+2025-08-01 10:16:37,635 - AARBot - INFO - 
+=== WAITING FOR COMMANDS ===
+
+2025-08-01 10:23:54,661 - AARBot - INFO - Python version: 3.12.0 (tags/v3.12.0:0fb18b0, Oct  2 2023, 13:03:39) [MSC v.1935 64 bit (AMD64)]
+2025-08-01 10:23:54,663 - AARBot - INFO - discord.py version: 2.3.2
+2025-08-01 10:23:58,675 - AARBot - INFO - 
+=== BOT STARTING UP ===
+2025-08-01 10:23:58,675 - AARBot - INFO - Logged in as: Onboarder#7552
+2025-08-01 10:23:58,676 - AARBot - INFO - Bot ID: 1400469591787831449
+2025-08-01 10:23:58,676 - AARBot - INFO - 
+=== BOT IS READY ===
+2025-08-01 10:23:58,676 - AARBot - INFO - Bot is connected to the following servers:
+2025-08-01 10:23:58,676 - AARBot - INFO - - EZ_GGgaming (ID: 1035505836195332166)
+2025-08-01 10:23:58,676 - AARBot - INFO - 
+=== INVITE LINK ===
+2025-08-01 10:23:58,676 - AARBot - INFO - https://discord.com/oauth2/authorize?client_id=1400469591787831449&permissions=8&scope=bot
+2025-08-01 10:23:58,676 - AARBot - INFO - 
+=== WAITING FOR COMMANDS ===
+
+2025-08-01 10:33:09,573 - AARBot - INFO - Python version: 3.12.0 (tags/v3.12.0:0fb18b0, Oct  2 2023, 13:03:39) [MSC v.1935 64 bit (AMD64)]
+2025-08-01 10:33:09,573 - AARBot - INFO - discord.py version: 2.3.2
+2025-08-01 10:33:13,744 - AARBot - INFO - 
+=== BOT STARTING UP ===
+2025-08-01 10:33:13,744 - AARBot - INFO - Logged in as: Onboarder#7552
+2025-08-01 10:33:13,744 - AARBot - INFO - Bot ID: 1400469591787831449
+2025-08-01 10:33:13,744 - AARBot - INFO - 
+=== BOT IS READY ===
+2025-08-01 10:33:13,744 - AARBot - INFO - Bot is connected to the following servers:
+2025-08-01 10:33:13,744 - AARBot - INFO - - EZ_GGgaming (ID: 1035505836195332166)
+2025-08-01 10:33:13,744 - AARBot - INFO - 
+=== INVITE LINK ===
+2025-08-01 10:33:13,745 - AARBot - INFO - https://discord.com/oauth2/authorize?client_id=1400469591787831449&permissions=8&scope=bot
+2025-08-01 10:33:13,745 - AARBot - INFO - 
+=== WAITING FOR COMMANDS ===
+
+2025-08-01 10:34:18,731 - AARBot - INFO - Python version: 3.12.0 (tags/v3.12.0:0fb18b0, Oct  2 2023, 13:03:39) [MSC v.1935 64 bit (AMD64)]
+2025-08-01 10:34:18,732 - AARBot - INFO - discord.py version: 2.3.2
+2025-08-01 10:34:18,733 - AARBot - INFO - 
+=== Starting save_to_excel ===
+2025-08-01 10:34:18,734 - AARBot - INFO - User ID: test_user_123
+2025-08-01 10:34:18,734 - AARBot - INFO - Data to save: {'full_name': 'Test User', 'email': 'test@example.com', 'phone': '0712345678', 'dob': '01/01/1990'}
+2025-08-01 10:34:18,734 - AARBot - ERROR - Error in save_to_excel: cannot access local variable 'os' where it is not associated with a value
+Traceback (most recent call last):
+  File "C:\Users\anthony.kinyua\OneDrive - AAR Insurance\Discord\Insurance calc\AAR Bots script\Onboarding\bot.py", line 66, in save_to_excel
+    abs_path = os.path.abspath(filename)
+               ^^
+UnboundLocalError: cannot access local variable 'os' where it is not associated with a value

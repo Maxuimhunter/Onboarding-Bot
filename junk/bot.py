@@ -1,12 +1,10 @@
 import os
 import discord
 import pandas as pd
-import mysql.connector
 from datetime import datetime
 from discord.ext import commands
 from dotenv import load_dotenv
 from openpyxl.styles import PatternFill, Font
-from database import db
 
 # Load environment variables
 load_dotenv()
@@ -22,6 +20,14 @@ bot = commands.Bot(command_prefix='!', intents=intents)
 user_data = {}
 
 # Function to save data to Excel
+import random
+import string
+
+def generate_entry_code(length=8):
+    """Generate a random alphanumeric entry code"""
+    characters = string.ascii_uppercase + string.digits
+    return ''.join(random.choice(characters) for _ in range(length))
+
 def save_identity_data(user_name, data, filename="onboarding_data.xlsx"):
     """Save identity data to a separate Excel file using user's name"""
     try:
@@ -40,7 +46,7 @@ def save_identity_data(user_name, data, filename="onboarding_data.xlsx"):
             
             # Check if headers exist, if not add them
             if ws.max_row == 0 or ws.cell(row=1, column=1).value is None:
-                headers = ['Full Name', 'ID Number', 'Passport', 'KRA Number', 'Last Updated']
+                headers = ['Entry Code', 'Full Name', 'ID Number', 'Passport', 'KRA Number', 'Last Updated']
                 for col_num, header in enumerate(headers, 1):
                     cell = ws.cell(row=1, column=col_num, value=header)
                     cell.font = Font(bold=True)
@@ -50,7 +56,7 @@ def save_identity_data(user_name, data, filename="onboarding_data.xlsx"):
             book = Workbook()
             ws = book.active
             ws.title = "Identity Data"
-            headers = ['Full Name', 'ID Number', 'Passport', 'KRA Number', 'Last Updated']
+            headers = ['Entry Code', 'Full Name', 'ID Number', 'Passport', 'KRA Number', 'Last Updated']
             for col_num, header in enumerate(headers, 1):
                 cell = ws.cell(row=1, column=col_num, value=header)
                 cell.font = Font(bold=True)
@@ -59,18 +65,31 @@ def save_identity_data(user_name, data, filename="onboarding_data.xlsx"):
         # Find if user exists
         user_found = False
         for row in range(2, ws.max_row + 1):
-            if str(ws.cell(row=row, column=1).value).lower() == str(user_name).lower():
+            if str(ws.cell(row=row, column=2).value).lower() == str(user_name).lower():
                 # Update existing entry
-                ws.cell(row=row, column=2, value=data.get('id_number', 'N/A'))
-                ws.cell(row=row, column=3, value=data.get('passport', 'N/A'))
-                ws.cell(row=row, column=4, value=data.get('kra', 'Not provided'))
-                ws.cell(row=row, column=5, value=datetime.now().strftime("%Y-%m-%d %H:%M:%S"))
+                ws.cell(row=row, column=3, value=data.get('id_number', 'N/A'))
+                ws.cell(row=row, column=4, value=data.get('passport', 'N/A'))
+                ws.cell(row=row, column=5, value=data.get('kra', 'Not provided'))
+                ws.cell(row=row, column=6, value=datetime.now().strftime("%Y-%m-%d %H:%M:%S"))
                 user_found = True
                 break
         
-        # If user not found, add new row
+        # If user not found, add new row with generated entry code
         if not user_found:
+            # Generate a unique entry code
+            while True:
+                entry_code = generate_entry_code()
+                # Check if entry code already exists
+                code_exists = False
+                for row in range(2, ws.max_row + 1):
+                    if str(ws.cell(row=row, column=1).value) == entry_code:
+                        code_exists = True
+                        break
+                if not code_exists:
+                    break
+            
             new_row = [
+                entry_code,
                 user_name,
                 data.get('id_number', 'N/A'),
                 data.get('passport', 'N/A'),
@@ -78,6 +97,9 @@ def save_identity_data(user_name, data, filename="onboarding_data.xlsx"):
                 datetime.now().strftime("%Y-%m-%d %H:%M:%S")
             ]
             ws.append(new_row)
+            
+            # Return the generated entry code to the caller
+            data['entry_code'] = entry_code
         
         # Auto-size columns
         for column in ws.columns:
@@ -100,24 +122,13 @@ def save_identity_data(user_name, data, filename="onboarding_data.xlsx"):
         return False
 
 def save_to_excel(user_id, data, filename="onboarding_data.xlsx"):
-    """
-    Save user data to both Excel and MySQL database.
-    Returns the entry code if successful, None otherwise.
-    """
-    import os
-    import string
-    import random
-    from datetime import datetime
-    import pandas as pd
-    from openpyxl import load_workbook
-    from openpyxl.styles import Font, Alignment, PatternFill, Border, Side
-    from openpyxl.utils import get_column_letter
-    
-    entry_code = None
-    db_success = False
-    excel_success = False
-    
     try:
+        from openpyxl import load_workbook
+        from openpyxl.styles import Font, Alignment, PatternFill, Border, Side
+        from openpyxl.utils import get_column_letter
+        import uuid
+        import string
+        import random
         
         # Function to generate a random alphanumeric code
         def generate_unique_code(length=8):
@@ -127,152 +138,107 @@ def save_to_excel(user_id, data, filename="onboarding_data.xlsx"):
         # Get file path if it exists
         file_path = data.get('file_path', 'None')
         
+        # Always append new entry - never update existing ones
+        if os.path.exists(filename):
+            try:
+                # Read existing data to check for existing entry codes
+                df = pd.read_excel(filename)
+                # Ensure Entry Code column exists
+                if 'Entry Code' not in df.columns:
+                    df['Entry Code'] = ''
+            except Exception as e:
+                print(f"Error reading existing file: {e}")
+                df = pd.DataFrame()
+        else:
+            df = pd.DataFrame()
+        
         # Generate a unique code for this entry
         entry_code = generate_unique_code()
         
-        # Save to MySQL database first
-        try:
-            # Prepare data for database
-            db_data = data.copy()
-            db_data['file_path'] = file_path if file_path != 'None' else 'No file uploaded'
-            
-            # Save to database
-            entry_code = db.save_member(user_id, db_data)
-            if not entry_code:
-                print("Failed to save to database")
-                return None
-                
-            print(f"Successfully saved to database with entry code: {entry_code}")
-            db_success = True
-                
-        except Exception as e:
-            print(f"Error saving to database: {e}")
-            # Continue with Excel save even if database save fails
+        # If we have existing data, ensure the code is unique
+        if not df.empty:
+            existing_codes = set(df['Entry Code'].dropna().astype(str))  # Get all existing codes as strings
+            while entry_code in existing_codes:
+                entry_code = generate_unique_code()
         
-        # Continue with Excel save
-        try:
-            # Create parent directories if they don't exist
-            os.makedirs(os.path.dirname(os.path.abspath(filename)) or '.', exist_ok=True)
-            
-            # Initialize DataFrame for Excel
-            df = pd.DataFrame()
-            
-            # Check if file exists and is not empty
-            if os.path.exists(filename) and os.path.getsize(filename) > 0:
-                try:
-                    # Read existing data
-                    df = pd.read_excel(filename)
-                    
-                    # Ensure required columns exist
-                    required_columns = [
-                        'Entry Code', 'User ID', 'Full Name', 'Email', 
-                        'Phone', 'Date of Birth', 'File Path', 
-                        'Registration Date', 'Status'
-                    ]
-                    
-                    # Add missing columns
-                    for col in required_columns:
-                        if col not in df.columns:
-                            df[col] = ''
-                    
-                except Exception as e:
-                    print(f"Error reading existing file: {e}")
-                    df = pd.DataFrame(columns=required_columns)
-        except Exception as e:
-            print(f"Error setting up Excel file: {e}")
-            return None
-            
-            # Create a DataFrame with the user's data (exclude sensitive data from main sheet)
-            new_data = {
-                'Entry Code': entry_code,  # Use the same entry code from database
-                'User ID': str(user_id),
-                'Full Name': data.get('full_name', '').title(),
-                'Email': data.get('email', '').lower(),
-                'Phone': data.get('phone', ''),
-                'Date of Birth': data.get('dob', ''),
-                'File Path': file_path if file_path != 'None' else 'No file uploaded',
-                'Registration Date': datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
-                'Status': 'Active'
-            }
-            
-            # Save sensitive data to separate sheet first
-            user_name = data.get('full_name', '').title()
-            save_identity_data(user_name, data, filename)
-            
-            # Always append new entry - never update existing ones
-            if os.path.exists(filename):
-                try:
-                    # Read existing data
-                    df = pd.read_excel(filename)
-                    # Ensure Entry Code column exists
-                    if 'Entry Code' not in df.columns:
-                        df['Entry Code'] = ''
-                    # Generate new unique code if it already exists
-                    while True:
-                        existing_codes = set(df['Entry Code'].dropna())  # Get all existing codes
-                        if entry_code not in existing_codes:
-                            break
-                        entry_code = generate_unique_code()
-                        new_data['Entry Code'] = entry_code
-                    # Append new data
-                    df = pd.concat([df, pd.DataFrame([new_data])], ignore_index=True)
-                except Exception as e:
-                    print(f"Error reading existing file: {e}")
-                    df = pd.DataFrame([new_data])
-            else:
-                # Create new DataFrame with the new entry
-                df = pd.DataFrame([new_data])
-                
-            # Create Excel writer object with error handling
+        # Create a DataFrame with the user's data (exclude sensitive data from main sheet)
+        new_data = {
+            'Entry Code': entry_code,  # Add unique code
+            'User ID': str(user_id),
+            'Full Name': data.get('full_name', '').title(),
+            'Email': data.get('email', '').lower(),
+            'Phone': data.get('phone', ''),
+            'Date of Birth': data.get('dob', ''),
+            'File Path': file_path if file_path != 'None' else 'No file uploaded',
+            'Registration Date': datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
+            'Status': 'Active'
+        }
+        
+        # Save sensitive data to separate sheet first
+        user_name = data.get('full_name', '').title()
+        save_identity_data(user_name, data, filename)
+        
+        # Always append new entry - never update existing ones
+        if os.path.exists(filename):
             try:
-                writer = pd.ExcelWriter(filename, engine='openpyxl')
-                excel_success = True
+                # Read existing data
+                df = pd.read_excel(filename)
+                # Ensure Entry Code column exists
+                if 'Entry Code' not in df.columns:
+                    df['Entry Code'] = ''
+                # Generate new unique code if it already exists
+                while True:
+                    existing_codes = set(df['Entry Code'].dropna())  # Get all existing codes
+                    if entry_code not in existing_codes:
+                        break
+                    entry_code = generate_unique_code()
+                    new_data['Entry Code'] = entry_code
+                # Append new data
+                df = pd.concat([df, pd.DataFrame([new_data])], ignore_index=True)
             except Exception as e:
-                print(f"Error creating Excel writer: {e}")
-                if db_success:
-                    print("Data was saved to database but not to Excel")
-                    return entry_code
-                return None
-                
-                # Final check before saving
-                if not excel_success and not db_success:
-                    print("Failed to save data to both database and Excel")
-                    return None
-                
-                # Ensure all required columns exist
-                required_columns = [
-                    'Entry Code',
-                    'User ID',
-                    'Full Name',
-                    'Email',
-                    'Phone',
-                    'Date of Birth',
-                    'Registration Date',
-                    'Status'
-                ]
+                print(f"Error reading existing file: {e}")
+                df = pd.DataFrame([new_data])
+        else:
+            # Create new DataFrame with the new entry
+            df = pd.DataFrame([new_data])
             
-                # Add any missing columns with empty values
-                for col in required_columns:
-                    if col not in df.columns:
-                        df[col] = ''
-                
-                # Reorder columns to match required order
-                df = df[required_columns]
-                
-                # Convert date strings to datetime objects for proper Excel formatting
-                if 'Registration Date' in df.columns:
-                    df['Registration Date'] = pd.to_datetime(df['Registration Date'])
-                
-                # Define styles
-                header_fill = PatternFill(start_color='4F81BD', end_color='4F81BD', fill_type='solid')
-                header_font = Font(color='FFFFFF', bold=True)
-                border = Border(left=Side(style='thin'), 
-                               right=Side(style='thin'), 
-                               top=Side(style='thin'), 
-                               bottom=Side(style='thin'))
-                
-                # Write DataFrame to Excel
-                df.to_excel(writer, index=False, sheet_name='Onboarding Data')
+        # Create Excel writer object
+        writer = pd.ExcelWriter(filename, engine='openpyxl')
+        
+        # Ensure all required columns exist
+        required_columns = [
+            'Entry Code',
+            'User ID',
+            'Full Name',
+            'Email',
+            'Phone',
+            'Date of Birth',
+            'Registration Date',
+            'Status'
+        ]
+        
+        # Add any missing columns with empty values
+        for col in required_columns:
+            if col not in df.columns:
+                df[col] = ''
+        
+        # Reorder columns to match required order
+        df = df[required_columns]
+        
+        # Convert date strings to datetime objects for proper Excel formatting
+        if 'Registration Date' in df.columns:
+            df['Registration Date'] = pd.to_datetime(df['Registration Date'])
+        
+        # Define styles
+        header_fill = PatternFill(start_color='4F81BD', end_color='4F81BD', fill_type='solid')
+        header_font = Font(color='FFFFFF', bold=True)
+        border = Border(left=Side(style='thin'), 
+                       right=Side(style='thin'), 
+                       top=Side(style='thin'), 
+                       bottom=Side(style='thin'))
+        
+        # Write DataFrame to Excel
+        df.to_excel(writer, index=False, sheet_name='Onboarding Data')
         
         # Get the worksheet
         if 'Onboarding Data' in writer.sheets:
@@ -420,20 +386,42 @@ async def handle_file_upload(message, user_id):
         await message.channel.send("❌ Error saving file. Please try again or type 'skip' to continue.")
         return False
 
+# Track processed message IDs to prevent duplicate processing
+processed_messages = set()
+
 @bot.event
 async def on_message(message):
     # Ignore messages from the bot itself
     if message.author == bot.user:
         return
     
-    # Process commands first
-    await bot.process_commands(message)
+    # Create a unique identifier for this message
+    msg_id = f"{message.channel.id}-{message.id}"
+    
+    # Skip if we've already processed this message
+    if msg_id in processed_messages:
+        return
+    
+    # Add to processed messages
+    processed_messages.add(msg_id)
+    
+    # Get the context first
+    ctx = await bot.get_context(message)
+    
+    # Check if this is a command
+    if ctx.valid and ctx.command is not None:
+        await bot.invoke(ctx)
+        return
     
     # Handle onboarding conversation
     user_id = str(message.author.id)
     
-    # If user is in the middle of onboarding and the message is not a command
-    if user_id in user_data and user_data[user_id].get('awaiting_input') and not message.content.startswith('!'):
+    # If user is not in user_data, ignore the message (they need to start with !onboard)
+    if user_id not in user_data:
+        return
+        
+    # If we're waiting for input from this user
+    if user_data[user_id].get('awaiting_input'):
         current_field = user_data[user_id]['awaiting_input']
         
         # Handle file upload question
@@ -574,78 +562,43 @@ async def help_command(ctx):
     
     **Onboarding Process:**
     The bot will guide you through a series of questions to collect your information.
+    Just type your answers one at a time when prompted.
     """
     await ctx.send(help_text)
 
 async def update_member_status(entry_code, new_status, filename="onboarding_data.xlsx"):
-    """
-    Update a member's status in both Excel and MySQL database.
-    Returns True if successful in at least one storage, False otherwise.
-    """
-    success = False
-    
-    # Update status in MySQL
-    try:
-        db_updated = db.update_member_status(entry_code, new_status)
-        if db_updated:
-            print(f"Status for entry {entry_code} updated to {new_status} in database")
-            success = True
-        else:
-            print(f"Failed to update status in database for entry {entry_code}")
-    except Exception as e:
-        print(f"Error updating status in database: {e}")
-    
-    # Update status in Excel
-    excel_updated = False
+    """Update a member's status in the Excel file"""
     try:
         if not os.path.exists(filename):
-            print(f"Excel file {filename} does not exist, skipping Excel update")
-            return success
+            return False, "No members found. Please register first using !start"
             
         # Read the Excel file
         df = pd.read_excel(filename)
         
-        # Check if the entry code exists
-        if 'Entry Code' not in df.columns:
-            print("Error: 'Entry Code' column not found in the Excel file")
-            return success
-            
+        # Convert entry_code to string for comparison
+        df['Entry Code'] = df['Entry Code'].astype(str)
+        
         # Find the row with the matching entry code
-        mask = df['Entry Code'].astype(str) == str(entry_code)
-        if not any(mask):
-            print(f"Warning: Entry code {entry_code} not found in Excel, but updated in database")
-            return success
+        mask = df['Entry Code'] == str(entry_code).strip().upper()
+        
+        if not mask.any():
+            return False, f"No member found with entry code: {entry_code}"
             
+        current_status = df.loc[mask, 'Status'].iloc[0]
+        
+        # Check if already in the requested status
+        if current_status.lower() == new_status.lower():
+            member_name = df.loc[mask, 'Full Name'].iloc[0]
+            return False, f"{member_name} is already {current_status}"
+        
         # Update the status
-        df.loc[mask, 'Status'] = new_status
+        df.loc[mask, 'Status'] = new_status.capitalize()
         
         # Save back to Excel with formatting
         with pd.ExcelWriter(filename, engine='openpyxl') as writer:
             df.to_excel(writer, index=False, sheet_name='Onboarding Data')
             worksheet = writer.sheets['Onboarding Data']
             
-            # Apply formatting
-            header_fill = PatternFill(start_color='DDEBF7', end_color='DDEBF7', fill_type='solid')
-            header_font = Font(bold=True)
-            
-            # Format header row
-            for cell in worksheet[1]:
-                cell.fill = header_fill
-                cell.font = header_font
-            
-            # Auto-size columns
-            for column in worksheet.columns:
-                max_length = 0
-                column_letter = get_column_letter(column[0].column)
-                for cell in column:
-                    try:
-                        if len(str(cell.value)) > max_length:
-                            max_length = len(str(cell.value))
-                    except:
-                        pass
-                adjusted_width = (max_length + 2) * 1.1
-                worksheet.column_dimensions[column_letter].width = min(max(adjusted_width, 10), 30)
-        
             # Apply formatting
             header_fill = PatternFill(start_color='4F81BD', end_color='4F81BD', fill_type='solid')
             header_font = Font(color='FFFFFF', bold=True)
@@ -654,16 +607,9 @@ async def update_member_status(entry_code, new_status, filename="onboarding_data
                 cell.fill = header_fill
                 cell.font = header_font
         
-            print(f"Status for entry {entry_code} updated to {new_status} in Excel")
-            excel_updated = True
-            
-            member_name = df.loc[mask, 'Full Name'].iloc[0]
-            action = "activated" if new_status.lower() == 'active' else "deactivated"
-            return True, f"✅ You have successfully {action} {member_name}"
-            
-    except Exception as e:
-        print(f"Error updating member status in Excel: {e}")
-        return success or excel_updated, f"❌ Error updating status: {str(e)}"
+        member_name = df.loc[mask, 'Full Name'].iloc[0]
+        action = "activated" if new_status.lower() == 'active' else "deactivated"
+        return True, f"✅ You have successfully {action} {member_name}"
         
     except Exception as e:
         return False, f"Error updating status: {str(e)}"
@@ -722,71 +668,40 @@ def initialize_excel(filename="onboarding_data.xlsx"):
 # Run the bot
 @bot.command(name='status')
 async def status_command(ctx, entry_code: str = None, action: str = None):
-    """View or update member status with database integration"""
-    try:
-        if entry_code and action:
-            # Update status in database
-            if action.lower() not in ['activate', 'deactivate']:
-                await ctx.send("❌ Invalid action. Use 'activate' or 'deactivate'")
-                return
-                
-            new_status = 'Active' if action.lower() == 'activate' else 'Inactive'
-            success = db.update_member_status(entry_code, new_status)
+    """View or update member status"""
+    if entry_code and action:
+        # Update status
+        if action.lower() not in ['activate', 'deactivate']:
+            await ctx.send("❌ Invalid action. Use 'activate' or 'deactivate'")
+            return
             
-            if success:
-                await ctx.send(f"✅ Successfully {action}d member with entry code: {entry_code}")
-            else:
-                await ctx.send(f"❌ Failed to update status for entry code: {entry_code}")
-                
+        success, message = await update_member_status(entry_code, action)
+        await ctx.send(f"{'✅' if success else '❌'} {message}")
+    else:
+        # List all members
+        members = get_all_members()
+        if not members:
+            await ctx.send("No members found. Use `!start` to register.")
+            return
+            
+        # Create a formatted message
+        message = "**Member Status:**\n\n"
+        for member in members:
+            status_emoji = "🟢" if member.get('Status', '').lower() == 'active' else "🔴"
+            message += (
+                f"`{member.get('Entry Code', 'N/A')}` - {member.get('Full Name', 'Unknown')} "
+                f"({member.get('Email', 'No email')}) - {status_emoji} {member.get('Status', 'Unknown')}\n"
+            )
+        
+        message += "\nTo update status, use: `!status [entry_code] [activate|deactivate]`"
+        
+        # Split message if too long for Discord
+        if len(message) > 2000:
+            chunks = [message[i:i+2000] for i in range(0, len(message), 2000)]
+            for chunk in chunks:
+                await ctx.send(chunk)
         else:
-            # Get all members from database
-            try:
-                members = db.get_all_members()
-                if not members:
-                    await ctx.send("No members found in the database. Use `!start` to register.")
-                    return
-                
-                # Create a formatted message
-                message = "**📊 Member Status (From Database)**\n\n"
-                
-                # Add database stats
-                total_members = len(members)
-                active_members = sum(1 for m in members if m[5].lower() == 'active')  # Status is at index 5
-                
-                message += f"👥 **Total Members:** {total_members}\n"
-                message += f"🟢 **Active:** {active_members}\n"
-                message += f"🔴 **Inactive:** {total_members - active_members}\n\n"
-                message += "**Member List:**\n\n"
-                
-                # Add member details (limited to prevent message overflow)
-                for member in members[:10]:  # Show first 10 members
-                    status_emoji = "🟢" if member[5].lower() == 'active' else "🔴"  # Status at index 5
-                    message += (
-                        f"`{member[1]}` - {member[3]} "  # Entry code at 1, Full name at 3
-                        f"({member[4]}) - {status_emoji} {member[5]}\n"  # Email at 4, Status at 5
-                    )
-                
-                if len(members) > 10:
-                    message += f"\n... and {len(members) - 10} more members. Use `!status [entry_code]` for details."
-                
-                message += "\n**Usage:**\n"
-                message += "- `!status` - Show this summary\n"
-                message += "- `!status [entry_code]` - Show member details\n"
-                message += "- `!status [entry_code] [activate|deactivate]` - Update status"
-                
-                # Send the message in chunks if too long
-                if len(message) > 2000:
-                    chunks = [message[i:i+2000] for i in range(0, len(message), 2000)]
-                    for chunk in chunks:
-                        await ctx.send(chunk)
-                else:
-                    await ctx.send(message)
-                    
-            except Exception as e:
-                await ctx.send(f"❌ Error fetching members from database: {str(e)}")
-                
-    except Exception as e:
-        await ctx.send(f"❌ An error occurred: {str(e)}")
+            await ctx.send(message)
 
 
 if __name__ == "__main__":
